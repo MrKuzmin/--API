@@ -7,10 +7,7 @@
 <body>
     <div class="container">
         <h1>{{ title }}</h1>
-        <form action="{{ action }}" method="post" {% if action.startswith('/residents/') %} onsubmit="this._method.value='PUT'" {% endif %}>
-            {% if action.startswith('/residents/') %}
-            <input type="hidden" name="_method" value="PUT">
-            {% endif %}
+        <form action="{{ action }}" method="post" enctype="application/x-www-form-urlencoded">
             <div>
                 <label>ФИО:</label>
                 <input type="text" name="full_name" value="{{ resident.full_name if resident else '' }}" required>

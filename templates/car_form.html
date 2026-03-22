@@ -7,10 +7,7 @@
 <body>
     <div class="container">
         <h1>{{ title }}</h1>
-        <form action="{{ action }}" method="post" {% if action.startswith('/cars/') %} onsubmit="this._method.value='PUT'" {% endif %}>
-            {% if action.startswith('/cars/') %}
-            <input type="hidden" name="_method" value="PUT">
-            {% endif %}
+        <form action="{{ action }}" method="post" enctype="application/x-www-form-urlencoded">
             <div>
                 <label>Номер машины:</label>
                 <input type="text" name="plate" value="{{ car.plate if car else '' }}" required>

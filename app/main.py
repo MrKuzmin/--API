@@ -29,23 +29,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Подключаем статику (CSS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# ==================== MIDDLEWARE ====================
-@app.middleware("http")
-async def method_override(request: Request, call_next):
-    if request.method == "POST":
-        try:
-            body = await request.body()
-            form = await request.form()
-            if "_method" in form:
-                method = form.get("_method").upper()
-                if method in ("PUT", "DELETE"):
-                    request._method = method
-                    async def receive():
-                        return {"type": "http.request", "body": body}
-                    request._receive = receive
-        except Exception as e:
-            print(f"Middleware error: {e}")
-    return await call_next(request)
+
 # ==================== ЗАВИСИМОСТИ ====================
 
 def get_db():
@@ -133,7 +117,6 @@ async def auth_resident(request: Request, db: Session = Depends(get_db)):
             "error": "Введите номер телефона"
         })
     
-    # Проверка формата телефона
     if not re.match(r"^\+\d{11,15}$", phone):
         return templates.TemplateResponse("index.html", {
             "request": request,
@@ -181,7 +164,7 @@ async def auth_admin(request: Request):
     })
 
 
-# ==================== УПРАВЛЕНИЕ МАШИНАМИ (АДМИН) ====================
+# ==================== УПРАВЛЕНИЕ МАШИНАМИ ====================
 
 @app.get("/admin/car/add")
 def add_car_form(request: Request, db: Session = Depends(get_db)):
@@ -226,27 +209,7 @@ def create_car(
     return RedirectResponse(url="/admin-dashboard", status_code=303)
 
 
-@app.get("/admin/car/edit/{car_id}")
-def edit_car_form(
-    request: Request,
-    car_id: int,
-    db: Session = Depends(get_db)
-):
-    car = db.query(database.Car).filter(database.Car.id == car_id).first()
-    if not car:
-        raise HTTPException(status_code=404, detail="Машина не найдена")
-    
-    residents = db.query(database.Resident).all()
-    return templates.TemplateResponse("car_form.html", {
-        "request": request,
-        "car": car,
-        "residents": residents,
-        "title": "Редактировать машину",
-        "action": f"/cars/{car_id}"
-    })
-
-
-@app.put("/cars/{car_id}")
+@app.post("/cars/{car_id}")
 def update_car(
     request: Request,
     car_id: int,
@@ -295,7 +258,7 @@ def delete_car(
     return RedirectResponse(url="/admin-dashboard", status_code=303)
 
 
-# ==================== УПРАВЛЕНИЕ ЖИЛЬЦАМИ (АДМИН) ====================
+# ==================== УПРАВЛЕНИЕ ЖИЛЬЦАМИ ====================
 
 @app.get("/admin/resident/add")
 def add_resident_form(request: Request):
@@ -334,25 +297,7 @@ def create_resident(
     return RedirectResponse(url="/admin-dashboard", status_code=303)
 
 
-@app.get("/admin/resident/edit/{resident_id}")
-def edit_resident_form(
-    request: Request,
-    resident_id: int,
-    db: Session = Depends(get_db)
-):
-    resident = db.query(database.Resident).filter(database.Resident.id == resident_id).first()
-    if not resident:
-        raise HTTPException(status_code=404, detail="Жилец не найден")
-    
-    return templates.TemplateResponse("resident_form.html", {
-        "request": request,
-        "resident": resident,
-        "title": "Редактировать жильца",
-        "action": f"/residents/{resident_id}"
-    })
-
-
-@app.put("/residents/{resident_id}")
+@app.post("/residents/{resident_id}")
 def update_resident(
     request: Request,
     resident_id: int,
@@ -444,6 +389,41 @@ def exit_car(
     
     return RedirectResponse(url="/admin-dashboard", status_code=303)
 
+@app.get("/admin/resident/edit/{resident_id}")
+def edit_resident_form(
+    request: Request,
+    resident_id: int,
+    db: Session = Depends(get_db)
+):
+    resident = db.query(database.Resident).filter(database.Resident.id == resident_id).first()
+    if not resident:
+        raise HTTPException(status_code=404, detail="Жилец не найден")
+    
+    return templates.TemplateResponse("resident_form.html", {
+        "request": request,
+        "resident": resident,
+        "title": "Редактировать жильца",
+        "action": f"/residents/{resident_id}"
+    })
+
+@app.get("/admin/car/edit/{car_id}")
+def edit_car_form(
+    request: Request,
+    car_id: int,
+    db: Session = Depends(get_db)
+):
+    car = db.query(database.Car).filter(database.Car.id == car_id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Машина не найдена")
+    
+    residents = db.query(database.Resident).all()
+    return templates.TemplateResponse("car_form.html", {
+        "request": request,
+        "car": car,
+        "residents": residents,
+        "title": "Редактировать машину",
+        "action": f"/cars/{car_id}"
+    })
 
 @app.post("/entry")
 def entry_car(

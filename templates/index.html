@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Garage — Парковка МКД</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Парковка МКД</h1>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form action="/auth/resident" method="post" enctype="application/x-www-form-urlencoded">
+            <label>Номер телефона:</label>
+            <input type="text" name="phone" placeholder="+79001234567" required>
+            <button type="submit">Войти как жилец</button>
+        </form>
+        <hr>
+        <a href="/admin-login" class="admin-btn">Я админ</a>
+    </div>
+</body>
+</html>

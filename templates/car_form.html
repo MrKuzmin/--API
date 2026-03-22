@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }} — Garage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <form action="{{ action }}" method="post" {% if action.startswith('/cars/') %} onsubmit="this._method.value='PUT'" {% endif %}>
+            {% if action.startswith('/cars/') %}
+            <input type="hidden" name="_method" value="PUT">
+            {% endif %}
+            <div>
+                <label>Номер машины:</label>
+                <input type="text" name="plate" value="{{ car.plate if car else '' }}" required>
+            </div>
+            <div>
+                <label>Марка:</label>
+                <input type="text" name="brand" value="{{ car.brand if car else '' }}" required>
+            </div>
+            <div>
+                <label>Модель:</label>
+                <input type="text" name="model" value="{{ car.model if car else '' }}" required>
+            </div>
+            <div>
+                <label>Цвет:</label>
+                <input type="text" name="color" value="{{ car.color if car else '' }}" required>
+            </div>
+            <div>
+                <label>Владелец:</label>
+                <select name="owner_id" required>
+                    {% for r in residents %}
+                    <option value="{{ r.id }}" {% if car and car.owner_id == r.id %}selected{% endif %}>
+                        {{ r.full_name }} (кв. {{ r.apartment }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Сохранить</button>
+            <a href="/admin-dashboard"><button type="button">Отмена</button></a>
+        </form>
+    </div>
+</body>
+</html>

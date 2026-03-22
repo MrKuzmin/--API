@@ -1,136 +1,159 @@
-# 🚗 Garage API
+# 🚗 Garage — Parking Management System
 
-API для управления автопарком. Учебный проект для демонстрации навыков тестирования API, работы с базами данных и Docker.
+Учебный проект для управления парковкой многоквартирного дома.  
+Демонстрирует навыки работы с **FastAPI**, **PostgreSQL**, **Docker**, **SQLAlchemy**, **Jinja2** и **Git**.
 
-## 📋 О проекте
+---
 
-Проект моделирует работу небольшого гаража:
-- **Автомобили** — добавление, хранение, изменение статуса
-- **Водители** — регистрация, привязка к автомобилям
-- **Права** — категории (B, C, D) для водителей
+## 🎯 Цель проекта
 
-Все сущности связаны между собой, что позволяет тестировать сложные сценарии.
+Создать полноценное веб-приложение для управления парковкой МКД с разграничением ролей:
+- **Жилец** — просмотр своих машин и поездок, статуса парковки
+- **Администратор** — управление жильцами, машинами, выездом/въездом
+
+---
 
 ## 🛠 Технологии
 
-- **Python 3.14** + **FastAPI** — само API
-- **PostgreSQL 17** — база данных
-- **SQLAlchemy** — ORM для работы с БД
-- **Docker** + **Docker Compose** — контейнеризация
-- **pgAdmin** — управление базой (опционально)
+| Компонент | Технологии |
+|-----------|------------|
+| Backend | Python 3.14, FastAPI, SQLAlchemy |
+| База данных | PostgreSQL 17 |
+| Контейнеризация | Docker, Docker Compose |
+| Фронтенд | Jinja2, HTML5, CSS3 |
+| Тестирование | Postman (коллекция) |
+| Версионирование | Git, GitHub |
 
-## 🚀 Запуск одной командой (Docker)
+---
 
-Самый простой способ запустить проект:
+## 🚀 Запуск проекта (Windows)
+
+### 1. Установите **Docker Desktop**
+- Скачайте с [docker.com](https://www.docker.com/products/docker-desktop/)
+- Запустите и убедитесь, что Docker работает (значок кита в трее)
+
+### 2. Скачайте папку проекта
+- Склонируйте репозиторий или скачайте ZIP-архив
+
+### 3. Запустите `start.bat`
+- Дважды кликните по файлу `start.bat` в папке проекта
+- Дождитесь сообщения `Project started!`
+- Откроется браузер с главной страницей
+
+### 4. Остановка проекта
+- Запустите `stop.bat` или нажмите `Ctrl+C` в терминале
+
+---
+
+## 🔑 Доступ к системе
+
+### Администратор
+- **Логин:** `admin`
+- **Пароль:** `admin`
+- Вход через `/admin-login`
+
+### Жильцы
+- Вход по номеру телефона (например, `+79001234567`)
+- Если жильцов нет — добавьте через админ-панель
+
+---
+
+## 📋 Возможности
+
+### Админ-панель (`/admin-dashboard`)
+- Просмотр всех жильцов и машин
+- Добавление / удаление жильцов
+- Добавление / удаление машин
+- Выезд / въезд автомобиля (с выбором водителя)
+- Проверка прав водителя (возраст, наличие прав)
+- Контроль свободных мест (максимум 100)
+
+### Панель жильца (`/resident/{id}`)
+- Просмотр своих машин
+- История поездок
+- Количество свободных мест
+
+---
+
+## 🗄 Структура базы данных
+
+### `residents`
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | SERIAL | уникальный идентификатор |
+| full_name | VARCHAR(100) | ФИО |
+| apartment | VARCHAR(10) | номер квартиры |
+| birth_date | DATE | дата рождения |
+| has_license | BOOLEAN | наличие прав |
+| phone | VARCHAR(20) | номер телефона (уникальный) |
+| role | VARCHAR(20) | `resident` / `admin` |
+
+### `cars`
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | SERIAL | уникальный идентификатор |
+| plate | VARCHAR(10) | госномер (уникальный) |
+| brand | VARCHAR(50) | марка |
+| model | VARCHAR(50) | модель |
+| color | VARCHAR(30) | цвет |
+| status | VARCHAR(20) | `parked` / `away` |
+| owner_id | INTEGER | ссылка на `residents.id` |
+
+### `parking_log`
+| Поле | Тип | Описание |
+|------|-----|----------|
+| id | SERIAL | уникальный идентификатор |
+| car_id | INTEGER | ссылка на `cars.id` |
+| driver_id | INTEGER | ссылка на `residents.id` |
+| departure_time | TIMESTAMP | время выезда |
+| return_time | TIMESTAMP | время возвращения (`NULL`) |
+
+---
+
+## 📡 API (основные эндпоинты)
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| POST | `/auth/resident` | Вход жильца по телефону |
+| POST | `/auth/admin` | Вход админа (admin/admin) |
+| GET | `/resident/{id}` | Панель жильца |
+| GET | `/admin-dashboard` | Панель админа |
+| POST | `/residents` | Добавить жильца |
+| POST | `/cars` | Добавить машину |
+| POST | `/exit` | Выезд |
+| POST | `/entry` | Въезд |
+
+---
+
+## 🧪 Тестирование
+
+- **Postman-коллекция** — в папке `postman/` (скоро)
+- **Проверка API** через `curl`:
 
 ```bash
-docker-compose up --build
-После запуска:
-
-API доступно по адресу http://localhost:8000
-
-Документация Swagger: http://localhost:8000/docs
-
-База данных PostgreSQL на порту 5432 (логин: postgres, пароль: postgres)
-
-Остановить:
-
-bash
-docker-compose down
-Если нужно полностью пересоздать базу:
-
-bash
-docker-compose down -v
-docker-compose up --build
-🔧 Запуск вручную (без Docker)
-Если хочешь запустить без контейнеров:
-
-Подними PostgreSQL (любым способом)
-
-Создай виртуальное окружение:
-
-bash
-python -m venv venv
-venv\Scripts\activate  # для Windows
-Установи зависимости:
-
-bash
-pip install -r requirements.txt
-Запусти сервер:
-
-bash
-uvicorn main:app --reload
-Открой http://127.0.0.1:8000/docs
-
-📚 Эндпоинты
-Автомобили (/cars)
-Метод	Эндпоинт	Описание
-POST	/cars/	Создать машину
-GET	/cars/	Список всех машин
-GET	/cars/{id}	Получить машину по ID
-PUT	/cars/{id}	Обновить машину
-DELETE	/cars/{id}	Удалить машину
-Водители (/drivers)
-Метод	Эндпоинт	Описание
-POST	/drivers/	Создать водителя
-GET	/drivers/	Список всех водителей
-GET	/drivers/{id}	Получить водителя по ID
-PUT	/drivers/{id}	Обновить водителя
-DELETE	/drivers/{id}	Удалить водителя
-Права (/licenses)
-Метод	Эндпоинт	Описание
-POST	/licenses/	Создать запись о правах
-GET	/licenses/	Список всех прав
-GET	/licenses/{id}	Получить права по ID
-PUT	/licenses/{id}	Обновить права
-DELETE	/licenses/{id}	Удалить права
-🗄 Структура базы данных
-sql
-cars: id, brand, year, status, license_category, image_url, color
-drivers: id, first_name, last_name, middle_name, age, car_id, license_id
-driver_licenses: id, has_b, has_c, has_d
-Связи:
-
-drivers.car_id → cars.id (водитель может быть привязан к машине)
-
-drivers.license_id → driver_licenses.id (водитель имеет права)
-
-📝 Примеры запросов
-Создать машину
-json
-POST /cars/
-{
-  "brand": "Toyota Camry",
-  "year": 2020,
-  "status": "free",
-  "license_category": "B",
-  "color": "black"
-}
-Создать водителя
-json
-POST /drivers/
-{
-  "first_name": "Иван",
-  "last_name": "Петров",
-  "age": 35,
-  "license_id": 1
-}
-Создать права
-json
-POST /licenses/
-{
-  "has_b": true,
-  "has_c": false,
-  "has_d": false
-}
+curl -X POST http://localhost:8000/auth/admin \
+  -H "Content-Type: application/json" \
+  -d '{"login":"admin","password":"admin"}'
+📁 Структура проекта
+text
+garage/
+├── start.bat               # запуск (контейнеры + браузер)
+├── stop.bat                # остановка
+├── restart.bat             # перезапуск
+├── logs.bat                # просмотр логов
+├── docker-compose.yml      # конфигурация сервисов
+├── Dockerfile              # сборка образа Python
+├── .env                    # переменные окружения
+├── requirements.txt        # зависимости Python
+├── app/
+│   ├── main.py             # FastAPI приложение
+│   ├── database.py         # модели SQLAlchemy
+│   └── schemas.py          # Pydantic-схемы
+├── templates/              # HTML-шаблоны (Jinja2)
+└── static/                 # CSS
 👨‍💻 Автор
 Владимир
-
-Email: vladimir_k_a@bk.ru
-
 Telegram: @Kuzmich0
-
 GitHub: MrKuzmin
 
-📄 Лицензия
-Проект создан в учебных целях. Свободно для использования и модификации.
+Проект создан в учебных целях для освоения современных инструментов разработки и тестирования.

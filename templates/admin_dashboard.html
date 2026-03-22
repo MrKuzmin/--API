@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ-панель — Garage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍💼 Админ-панель</h1>
+        <p>Свободно мест: {{ free_spots }} из 100</p>
+
+        <h2>Автомобили</h2>
+        <button onclick="location.href='/admin/car/add'">➕ Добавить машину</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Номер</th>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Цвет</th>
+                    <th>Владелец</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>{{ car.plate }}</td>
+                    <td>{{ car.brand }}</td>
+                    <td>{{ car.model }}</td>
+                    <td>{{ car.color }}</td>
+                    <td>{{ car.owner.full_name if car.owner else '—' }}</td>
+                    <td>{{ car.status }}</td>
+                    <td>
+                        {% if car.status == 'parked' %}
+                        <form action="/exit" method="post" style="display:inline;">
+                            <input type="hidden" name="car_id" value="{{ car.id }}">
+                            <select name="driver_id" required>
+                                {% for r in residents %}
+                                    {% if r.has_license %}
+                                        <option value="{{ r.id }}" {% if r.id == car.owner_id %}selected{% endif %}>
+                                            {{ r.full_name }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button type="submit">Выезд</button>
+                        </form>
+                        {% else %}
+                        <form action="/entry" method="post" style="display:inline;">
+                            <input type="hidden" name="car_id" value="{{ car.id }}">
+                            <button type="submit">Въезд</button>
+                        </form>
+                        {% endif %}
+                        <button onclick="location.href='/admin/car/edit/{{ car.id }}'">✏️</button>
+                        <form action="/admin/car/delete/{{ car.id }}" method="post" style="display:inline;" onsubmit="return confirm('Удалить машину?')">
+                            <button type="submit" style="background:#dc3545;">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">Нет машин</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Жильцы</h2>
+        <button onclick="location.href='/admin/resident/add'">➕ Добавить жильца</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Квартира</th>
+                    <th>Телефон</th>
+                    <th>Права</th>
+                    <th>Дата рождения</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in residents %}
+                <tr>
+                    <td>{{ r.full_name }}</td>
+                    <td>{{ r.apartment }}</td>
+                    <td>{{ r.phone }}</td>
+                    <td>{{ '✅' if r.has_license else '❌' }}</td>
+                    <td>{{ r.birth_date }}</td>
+                    <td>
+                        <button onclick="location.href='/admin/resident/edit/{{ r.id }}'">✏️</button>
+                        <form action="/admin/resident/delete/{{ r.id }}" method="post" style="display:inline;" onsubmit="return confirm('Удалить жильца?')">
+                            <button type="submit" style="background:#dc3545;">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Нет жильцов</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/">На главную</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Моя панель — Garage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Добро пожаловать, {{ resident.full_name }}</h1>
+        <p>Квартира: {{ resident.apartment }} | Телефон: {{ resident.phone }}</p>
+        <p>Свободно мест: {{ free_spots }} из 100</p>
+
+        <h2>Мои машины</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Номер</th>
+                    <th>Марка</th>
+                    <th>Модель</th>
+                    <th>Цвет</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for car in cars %}
+                <tr>
+                    <td>{{ car.plate }}</td>
+                    <td>{{ car.brand }}</td>
+                    <td>{{ car.model }}</td>
+                    <td>{{ car.color }}</td>
+                    <td>{{ car.status }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Нет машин</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Мои поездки</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Машина</th>
+                    <th>Выезд</th>
+                    <th>Возврат</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trip in trips %}
+                <tr>
+                    <td>{{ trip.car.plate }} ({{ trip.car.brand }} {{ trip.car.model }})</td>
+                    <td>{{ trip.departure_time.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>
+                        {% if trip.return_time %}
+                            {{ trip.return_time.strftime('%d.%m.%Y %H:%M') }}
+                        {% else %}
+                            <span class="away">В поездке</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3">Нет поездок</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="/">На главную</a>
+    </div>
+</body>
+</html>

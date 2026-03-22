@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }} — Garage</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ title }}</h1>
+        <form action="{{ action }}" method="post" {% if action.startswith('/residents/') %} onsubmit="this._method.value='PUT'" {% endif %}>
+            {% if action.startswith('/residents/') %}
+            <input type="hidden" name="_method" value="PUT">
+            {% endif %}
+            <div>
+                <label>ФИО:</label>
+                <input type="text" name="full_name" value="{{ resident.full_name if resident else '' }}" required>
+            </div>
+            <div>
+                <label>Квартира:</label>
+                <input type="text" name="apartment" value="{{ resident.apartment if resident else '' }}" required>
+            </div>
+            <div>
+                <label>Дата рождения:</label>
+                <input type="date" name="birth_date" value="{{ resident.birth_date if resident else '' }}" required>
+            </div>
+            <div>
+                <label>Номер телефона (+7...):</label>
+                <input type="text" name="phone" value="{{ resident.phone if resident else '' }}" required>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" name="has_license" {% if resident and resident.has_license %}checked{% endif %}>
+                    Есть права
+                </label>
+            </div>
+            <button type="submit">Сохранить</button>
+            <a href="/admin-dashboard"><button type="button">Отмена</button></a>
+        </form>
+    </div>
+</body>
+</html>
